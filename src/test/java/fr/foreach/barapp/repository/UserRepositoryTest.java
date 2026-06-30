@@ -134,7 +134,7 @@ class UserRepositoryTest {
                 .email("unique@example.com")
                 .name("User 2")
                 .passwordHash("hash2")
-                .role(Role.ADMIN)
+                .role(Role.BARMAKER)
                 .createdAt(Instant.now())
                 .build();
 
@@ -163,7 +163,7 @@ class UserRepositoryTest {
                 .email("user2@example.com")
                 .name("User 2")
                 .passwordHash("hash2")
-                .role(Role.ADMIN)
+                .role(Role.BARMAKER)
                 .createdAt(Instant.now())
                 .build();
 

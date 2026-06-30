@@ -20,7 +20,7 @@ class UserMapperTest {
                 .email("alice@example.com")
                 .name("Alice")
                 .password("secret123")
-                .role("ADMIN")
+                .role("BARMAKER")
                 .build();
 
         User user = mapper.toEntity(request);
@@ -28,7 +28,7 @@ class UserMapperTest {
         assertNotNull(user);
         assertEquals("alice@example.com", user.getEmail());
         assertEquals("Alice", user.getName());
-        assertEquals(Role.ADMIN, user.getRole());
+        assertEquals(Role.BARMAKER, user.getRole());
         assertEquals(null, user.getPasswordHash());
     }
 

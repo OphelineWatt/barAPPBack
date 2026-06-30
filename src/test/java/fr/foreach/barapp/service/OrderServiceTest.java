@@ -8,6 +8,7 @@ import fr.foreach.barapp.entities.CocktailPrice;
 import fr.foreach.barapp.entities.ItemStatus;
 import fr.foreach.barapp.entities.Order;
 import fr.foreach.barapp.entities.OrderItem;
+import fr.foreach.barapp.entities.OrderStatus;
 import fr.foreach.barapp.entities.Size;
 import fr.foreach.barapp.entities.User;
 import fr.foreach.barapp.exceptions.ResourceNotFoundException;
@@ -86,13 +87,51 @@ class OrderServiceTest {
     @DisplayName("findAll should return list of mapped orders")
     void testFindAll() {
         OrderResponse response = OrderResponse.builder().id(1L).build();
-        when(orderRepository.findAll()).thenReturn(List.of(testOrder));
+        when(orderRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(testOrder));
         when(orderMapper.toDto(testOrder)).thenReturn(response);
 
         List<OrderResponse> result = orderService.findAll();
 
         assertEquals(1, result.size());
-        verify(orderRepository, times(1)).findAll();
+        verify(orderRepository, times(1)).findAllByOrderByCreatedAtDesc();
+    }
+
+    @Test
+    @DisplayName("findAll(status) should delegate to findByStatusOrderByCreatedAtDesc when status given")
+    void testFindAllByStatus() {
+        OrderResponse response = OrderResponse.builder().id(1L).build();
+        when(orderRepository.findByStatusOrderByCreatedAtDesc(OrderStatus.EN_COURS)).thenReturn(List.of(testOrder));
+        when(orderMapper.toDto(testOrder)).thenReturn(response);
+
+        List<OrderResponse> result = orderService.findAll(OrderStatus.EN_COURS);
+
+        assertEquals(1, result.size());
+        verify(orderRepository, times(1)).findByStatusOrderByCreatedAtDesc(OrderStatus.EN_COURS);
+    }
+
+    @Test
+    @DisplayName("findAll(null) should behave like findAll()")
+    void testFindAllByNullStatus() {
+        OrderResponse response = OrderResponse.builder().id(1L).build();
+        when(orderRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(testOrder));
+        when(orderMapper.toDto(testOrder)).thenReturn(response);
+
+        List<OrderResponse> result = orderService.findAll((OrderStatus) null);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    @DisplayName("findByUser should return orders for the given user")
+    void testFindByUser() {
+        OrderResponse response = OrderResponse.builder().id(1L).build();
+        when(orderRepository.findByUserIdOrderByCreatedAtDesc(1L)).thenReturn(List.of(testOrder));
+        when(orderMapper.toDto(testOrder)).thenReturn(response);
+
+        List<OrderResponse> result = orderService.findByUser(1L);
+
+        assertEquals(1, result.size());
+        verify(orderRepository, times(1)).findByUserIdOrderByCreatedAtDesc(1L);
     }
 
     @Test
@@ -237,8 +276,17 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("advanceItem should throw ResourceNotFoundException when order not found")
+    void testAdvanceItemOrderNotFound() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> orderService.advanceItem(1L, 500L));
+    }
+
+    @Test
     @DisplayName("advanceItem should throw ResourceNotFoundException when item not found")
     void testAdvanceItemNotFound() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
         when(orderItemRepository.findById(500L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> orderService.advanceItem(1L, 500L));
@@ -249,6 +297,7 @@ class OrderServiceTest {
     void testAdvanceItemWrongOrder() {
         Order otherOrder = Order.builder().id(2L).build();
         OrderItem item = OrderItem.builder().id(500L).order(otherOrder).itemStatus(ItemStatus.PREPARATION_INGREDIENTS).build();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
         when(orderItemRepository.findById(500L)).thenReturn(Optional.of(item));
 
         assertThrows(IllegalArgumentException.class, () -> orderService.advanceItem(1L, 500L));
@@ -259,6 +308,7 @@ class OrderServiceTest {
     @DisplayName("advanceItem should throw IllegalStateException when itemStatus is null")
     void testAdvanceItemNullStatus() {
         OrderItem item = OrderItem.builder().id(500L).order(testOrder).itemStatus(null).build();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
         when(orderItemRepository.findById(500L)).thenReturn(Optional.of(item));
 
         assertThrows(IllegalStateException.class, () -> orderService.advanceItem(1L, 500L));
@@ -266,26 +316,53 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("advanceItem should move item to next status and persist it")
+    @DisplayName("advanceItem should move item to next status, persist it and flip order to EN_COURS")
     void testAdvanceItemSuccess() {
+        testOrder.setStatus(OrderStatus.COMMANDEE);
         OrderItem item = OrderItem.builder().id(500L).order(testOrder).itemStatus(ItemStatus.PREPARATION_INGREDIENTS).build();
+        OrderItem otherItem = OrderItem.builder().id(501L).order(testOrder).itemStatus(ItemStatus.PREPARATION_INGREDIENTS).build();
+        testOrder.getItems().add(item);
+        testOrder.getItems().add(otherItem);
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
         when(orderItemRepository.findById(500L)).thenReturn(Optional.of(item));
 
         orderService.advanceItem(1L, 500L);
 
         assertEquals(ItemStatus.ASSEMBLAGE, item.getItemStatus());
+        assertEquals(OrderStatus.EN_COURS, testOrder.getStatus());
         verify(orderItemRepository, times(1)).save(item);
+        verify(orderRepository, times(1)).save(testOrder);
+    }
+
+    @Test
+    @DisplayName("advanceItem should set order status to TERMINEE once the last item finishes")
+    void testAdvanceItemCompletesOrder() {
+        testOrder.setStatus(OrderStatus.EN_COURS);
+        OrderItem item = OrderItem.builder().id(500L).order(testOrder).itemStatus(ItemStatus.DRESSAGE).build();
+        OrderItem alreadyDoneItem = OrderItem.builder().id(501L).order(testOrder).itemStatus(ItemStatus.TERMINEE).build();
+        testOrder.getItems().add(item);
+        testOrder.getItems().add(alreadyDoneItem);
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
+        when(orderItemRepository.findById(500L)).thenReturn(Optional.of(item));
+
+        orderService.advanceItem(1L, 500L);
+
+        assertEquals(ItemStatus.TERMINEE, item.getItemStatus());
+        assertEquals(OrderStatus.TERMINEE, testOrder.getStatus());
+        verify(orderRepository, times(1)).save(testOrder);
     }
 
     @Test
     @DisplayName("advanceItem should do nothing when item is already in the last status")
     void testAdvanceItemAlreadyLastStatus() {
         OrderItem item = OrderItem.builder().id(500L).order(testOrder).itemStatus(ItemStatus.TERMINEE).build();
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(testOrder));
         when(orderItemRepository.findById(500L)).thenReturn(Optional.of(item));
 
         orderService.advanceItem(1L, 500L);
 
         assertEquals(ItemStatus.TERMINEE, item.getItemStatus());
         verify(orderItemRepository, never()).save(any());
+        verify(orderRepository, never()).save(any());
     }
 }

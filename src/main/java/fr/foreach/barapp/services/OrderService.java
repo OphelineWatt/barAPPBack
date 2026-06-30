@@ -39,7 +39,18 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     public java.util.List<OrderResponse> findAll() {
-        return orderRepository.findAll().stream().map(orderMapper::toDto).collect(Collectors.toList());
+        return orderRepository.findAllByOrderByCreatedAtDesc().stream().map(orderMapper::toDto).collect(Collectors.toList());
+    }
+
+    public java.util.List<OrderResponse> findAll(OrderStatus status) {
+        if (status == null) {
+            return findAll();
+        }
+        return orderRepository.findByStatusOrderByCreatedAtDesc(status).stream().map(orderMapper::toDto).collect(Collectors.toList());
+    }
+
+    public java.util.List<OrderResponse> findByUser(Long userId) {
+        return orderRepository.findByUserIdOrderByCreatedAtDesc(userId).stream().map(orderMapper::toDto).collect(Collectors.toList());
     }
 
     public OrderResponse find(Long id) {
@@ -127,6 +138,9 @@ public class OrderService {
     }
 
     public void advanceItem(Long orderId, Long itemId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found " + orderId));
+
         OrderItem item = orderItemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("OrderItem not found " + itemId));
 
@@ -149,6 +163,18 @@ public class OrderService {
         ItemStatus next = values[idx + 1];
         item.setItemStatus(next);
         orderItemRepository.save(item);
+
+        if (order.getStatus() == OrderStatus.COMMANDEE) {
+            order.setStatus(OrderStatus.EN_COURS);
+        }
+
+        boolean allItemsFinished = order.getItems().stream()
+                .allMatch(orderItem -> orderItem.getItemStatus() == ItemStatus.TERMINEE);
+        if (allItemsFinished) {
+            order.setStatus(OrderStatus.TERMINEE);
+        }
+
+        orderRepository.save(order);
     }
 
 }

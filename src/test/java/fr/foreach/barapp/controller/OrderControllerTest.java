@@ -100,6 +100,38 @@ class OrderControllerTest {
     }
 
     @Test
+    void listShouldReturn200WithOrders() throws Exception {
+        OrderResponse response = OrderResponse.builder().id(1L).userId(1L).status("COMMANDEE").build();
+        when(orderService.findAll((fr.foreach.barapp.entities.OrderStatus) null)).thenReturn(List.of(response));
+
+        mockMvc.perform(get("/api/orders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1));
+    }
+
+    @Test
+    void listShouldFilterByStatus() throws Exception {
+        OrderResponse response = OrderResponse.builder().id(1L).userId(1L).status("EN_COURS").build();
+        when(orderService.findAll(fr.foreach.barapp.entities.OrderStatus.EN_COURS)).thenReturn(List.of(response));
+
+        mockMvc.perform(get("/api/orders").param("status", "EN_COURS"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].status").value("EN_COURS"));
+
+        verify(orderService, times(1)).findAll(fr.foreach.barapp.entities.OrderStatus.EN_COURS);
+    }
+
+    @Test
+    void listByUserShouldReturn200WithOrders() throws Exception {
+        OrderResponse response = OrderResponse.builder().id(1L).userId(1L).status("COMMANDEE").build();
+        when(orderService.findByUser(1L)).thenReturn(List.of(response));
+
+        mockMvc.perform(get("/api/orders/user/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].userId").value(1));
+    }
+
+    @Test
     void updateShouldReturn204() throws Exception {
         OrderCreateRequest request = sampleRequest();
 

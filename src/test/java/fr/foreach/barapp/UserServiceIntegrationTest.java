@@ -70,7 +70,7 @@ class UserServiceIntegrationTest {
                 .email("user2@example.com")
                 .name("User 2")
                 .password("pass456")
-                .role("ADMIN")
+                .role("BARMAKER")
                 .build();
 
         userService.create(req1);

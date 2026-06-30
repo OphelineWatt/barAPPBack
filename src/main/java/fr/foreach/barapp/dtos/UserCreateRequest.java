@@ -18,5 +18,5 @@ public class UserCreateRequest {
 
     private String name;
 
-    private String role; // "ADMIN", "BARMAKER", "CLIENT"
+    private String role; // "BARMAKER", "CLIENT"
 }

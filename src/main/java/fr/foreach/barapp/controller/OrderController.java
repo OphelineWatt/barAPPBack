@@ -2,11 +2,14 @@ package fr.foreach.barapp.controller;
 
 import fr.foreach.barapp.dtos.OrderCreateRequest;
 import fr.foreach.barapp.dtos.OrderResponse;
+import fr.foreach.barapp.entities.OrderStatus;
 import fr.foreach.barapp.services.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -26,6 +29,16 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> get(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.find(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<OrderResponse>> list(@RequestParam(required = false) OrderStatus status) {
+        return ResponseEntity.ok(orderService.findAll(status));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<OrderResponse>> listByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(orderService.findByUser(userId));
     }
 
     @PostMapping("/{orderId}/advance-item/{itemId}")
