@@ -24,6 +24,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    //TODO remplacer ça par un mapper
     public UserResponse toResponse(User u) {
         return UserResponse.builder()
                 .id(u.getId())
@@ -49,6 +50,7 @@ public class UserService {
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already in use");
         }
+        //TODO utiliser un mapper
         User u = User.builder()
                 .email(req.getEmail())
                 .name(req.getName())
