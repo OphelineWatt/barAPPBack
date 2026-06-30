@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = {"fr.foreach.barapp_backend", "fr.foreach.barapp"})
 @EntityScan(basePackages = "fr.foreach.barapp.entities")
-@EnableJpaRepositories(basePackages = "fr.foreach.barapp.repository")
+@EnableJpaRepositories(basePackages = "fr.foreach.barapp.repositories")
 public class BarappBackendApplication {
 
 	public static void main(String[] args) {

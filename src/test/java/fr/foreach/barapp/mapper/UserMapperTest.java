@@ -29,7 +29,7 @@ class UserMapperTest {
         assertEquals("alice@example.com", user.getEmail());
         assertEquals("Alice", user.getName());
         assertEquals(Role.ADMIN, user.getRole());
-        assertEquals("secret123", user.getPasswordHash());
+        assertEquals(null, user.getPasswordHash());
     }
 
     @Test

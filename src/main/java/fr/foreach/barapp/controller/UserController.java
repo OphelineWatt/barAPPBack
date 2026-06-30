@@ -1,22 +1,35 @@
 package fr.foreach.barapp.controller;
 
-import fr.foreach.barapp.dtos.*;
-import fr.foreach.barapp.service.UserService;
-import jakarta.validation.Valid;
+import fr.foreach.barapp.dtos.UserCreateRequest;
+import fr.foreach.barapp.dtos.UserResponse;
+import fr.foreach.barapp.dtos.UserUpdateRequest;
+import fr.foreach.barapp.services.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@Validated
 public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    public UserController(UserService userService) { this.userService = userService; }
+
+    @PostMapping
+    public ResponseEntity<UserResponse> create(@RequestBody @Validated UserCreateRequest request) {
+        userService.save(request);
+        // Option: return created resource if service returns it; here we fetch the created user by email is omitted
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> get(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.find(id));
     }
 
     @GetMapping
@@ -24,30 +37,15 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> get(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.findById(id));
-    }
-
-    @PostMapping
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserCreateRequest req) {
-        UserResponse created = userService.create(req);
-        return ResponseEntity.created(URI.create("/api/users/" + created.getId())).body(created);
-    }
-
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> replace(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest req) {
-        return ResponseEntity.ok(userService.update(id, req));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<UserResponse> patch(@PathVariable Long id, @RequestBody UserUpdateRequest req) {
-        return ResponseEntity.ok(userService.update(id, req));
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody UserUpdateRequest request) {
+        userService.update(request, id);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userService.delete(id);
+        userService.remove(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -6,7 +6,9 @@ import fr.foreach.barapp.dtos.UserUpdateRequest;
 import fr.foreach.barapp.entities.Role;
 import fr.foreach.barapp.entities.User;
 import fr.foreach.barapp.exceptions.ResourceNotFoundException;
+import fr.foreach.barapp.mapper.UserMapper;
 import fr.foreach.barapp.repositories.UserRepository;
+import fr.foreach.barapp.services.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +34,9 @@ class UserServiceTest {
 
     @Mock
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserMapper userMapper;
 
     @InjectMocks
     private UserService userService;
@@ -59,6 +64,26 @@ class UserServiceTest {
                 .password("password123")
                 .role("CLIENT")
                 .build();
+
+        when(userMapper.toResponse(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            return UserResponse.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .role(user.getRole() != null ? user.getRole().name() : null)
+                    .createdAt(user.getCreatedAt())
+                    .build();
+        });
+
+        when(userMapper.toEntity(any(UserCreateRequest.class))).thenAnswer(invocation -> {
+            UserCreateRequest request = invocation.getArgument(0);
+            return User.builder()
+                    .email(request.getEmail())
+                    .name(request.getName())
+                    .role(request.getRole() != null ? Role.valueOf(request.getRole()) : Role.CLIENT)
+                    .build();
+        });
     }
 
     @Test

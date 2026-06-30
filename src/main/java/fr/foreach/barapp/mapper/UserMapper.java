@@ -21,6 +21,5 @@ public interface UserMapper {
     void updateEntityFromDto(UserUpdateRequest dto, @MappingTarget User entity);
 
     @Mapping(target = "role", source = "role")
-    @Mapping(target = "createdAt", expression = "java(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)")
     UserResponse toResponse(User user);
 }
