@@ -6,7 +6,8 @@ import fr.foreach.barapp.dtos.UserUpdateRequest;
 import fr.foreach.barapp.entities.Role;
 import fr.foreach.barapp.entities.User;
 import fr.foreach.barapp.exceptions.ResourceNotFoundException;
-import fr.foreach.barapp.repository.UserRepository;
+import fr.foreach.barapp.repositories.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;

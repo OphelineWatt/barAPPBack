@@ -1,4 +1,4 @@
-package fr.foreach.barapp.repository;
+package fr.foreach.barapp.repositories;
 
 import fr.foreach.barapp.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;

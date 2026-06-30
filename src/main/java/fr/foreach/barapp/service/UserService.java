@@ -1,86 +1,106 @@
 package fr.foreach.barapp.service;
 
-import fr.foreach.barapp.entities.User;
 import fr.foreach.barapp.dtos.UserCreateRequest;
 import fr.foreach.barapp.dtos.UserResponse;
 import fr.foreach.barapp.dtos.UserUpdateRequest;
 import fr.foreach.barapp.entities.Role;
-import fr.foreach.barapp.mapper.UserMapper;
-import fr.foreach.barapp.repository.UserRepository;
+import fr.foreach.barapp.entities.User;
 import fr.foreach.barapp.exceptions.ResourceNotFoundException;
-import org.mapstruct.factory.Mappers;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import fr.foreach.barapp.mapper.UserMapper;
+import fr.foreach.barapp.repositories.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service utilisateur concret (sans interface) — injecter directement ce bean là où nécessaire.
+ * Méthodes : create, findById, findAll, update, delete.
+ */
 @Service
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
-                       BCryptPasswordEncoder passwordEncoder,
-                       UserMapper userMapper) {
+                       UserMapper userMapper,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public UserResponse toResponse(User u) {
-        return userMapper.toResponse(u);
+    public UserResponse create(UserCreateRequest request) {
+        userRepository.findByEmail(request.getEmail()).ifPresent(u -> {
+            throw new IllegalArgumentException("Email already in use");
+        });
+
+        User user = userMapper.toEntity(request);
+
+        // safe role mapping
+        if (request.getRole() != null) {
+            try {
+                user.setRole(Role.valueOf(request.getRole()));
+            } catch (IllegalArgumentException ignored) {
+                user.setRole(Role.CLIENT);
+            }
+        } else {
+            user.setRole(Role.CLIENT);
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setCreatedAt(Instant.now());
+
+        User saved = userRepository.save(user);
+        return userMapper.toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
+    public UserResponse findById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
+        return userMapper.toResponse(user);
+    }
+
+    @Transactional(readOnly = true)
     public List<UserResponse> findAll() {
         return userRepository.findAll().stream()
-                .map(this::toResponse)
+                .map(userMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
-    public UserResponse findById(Long id) {
-        User u = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
-        return toResponse(u);
-    }
-
-    @Transactional
-    public UserResponse create(UserCreateRequest req) {
-        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already in use");
-        }
-        User u = userMapper.toEntity(req);
-        u.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-        return toResponse(userRepository.save(u));
-    }
-
-    @Transactional
-    public UserResponse update(Long id, UserUpdateRequest req) {
-        User u = userRepository.findById(id)
+    public UserResponse update(Long id, UserUpdateRequest request) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
 
-        if (req.getEmail() != null && !req.getEmail().equals(u.getEmail())) {
-            userRepository.findByEmail(req.getEmail()).ifPresent(existing -> {
-                if (!existing.getId().equals(id)) throw new IllegalArgumentException("Email already in use");
-            });
-            u.setEmail(req.getEmail());
+        userMapper.updateEntityFromDto(request, user);
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
 
-        if (req.getName() != null) u.setName(req.getName());
-        if (req.getPassword() != null) u.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-        if (req.getRole() != null) u.setRole(Role.valueOf(req.getRole()));
+        if (request.getRole() != null) {
+            try {
+                user.setRole(Role.valueOf(request.getRole()));
+            } catch (IllegalArgumentException ignored) {
+                // keep existing role if invalid
+            }
+        }
 
-        return toResponse(userRepository.save(u));
+        User saved = userRepository.save(user);
+        return userMapper.toResponse(saved);
     }
 
-    @Transactional
     public void delete(Long id) {
-        User u = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
-        userRepository.delete(u);
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found with id " + id);
+        }
+        userRepository.deleteById(id);
     }
 }

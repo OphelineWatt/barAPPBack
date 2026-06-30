@@ -4,7 +4,7 @@ import fr.foreach.barapp.dtos.UserCreateRequest;
 import fr.foreach.barapp.dtos.UserResponse;
 import fr.foreach.barapp.dtos.UserUpdateRequest;
 import fr.foreach.barapp.entities.User;
-import fr.foreach.barapp.repository.UserRepository;
+import fr.foreach.barapp.repositories.UserRepository;
 import fr.foreach.barapp.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

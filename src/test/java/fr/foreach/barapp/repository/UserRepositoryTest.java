@@ -2,6 +2,8 @@ package fr.foreach.barapp.repository;
 
 import fr.foreach.barapp.entities.Role;
 import fr.foreach.barapp.entities.User;
+import fr.foreach.barapp.repositories.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
