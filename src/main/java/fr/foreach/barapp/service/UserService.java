@@ -1,15 +1,19 @@
 package fr.foreach.barapp.service;
 
 import fr.foreach.barapp.entities.User;
+import fr.foreach.barapp.dtos.UserCreateRequest;
+import fr.foreach.barapp.dtos.UserResponse;
+import fr.foreach.barapp.dtos.UserUpdateRequest;
 import fr.foreach.barapp.entities.Role;
+import fr.foreach.barapp.mapper.UserMapper;
 import fr.foreach.barapp.repository.UserRepository;
-import fr.foreach.barapp.dtos.*;
 import fr.foreach.barapp.exceptions.ResourceNotFoundException;
+import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,25 +22,24 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       BCryptPasswordEncoder passwordEncoder,
+                       UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
-    //TODO remplacer ça par un mapper
     public UserResponse toResponse(User u) {
-        return UserResponse.builder()
-                .id(u.getId())
-                .email(u.getEmail())
-                .name(u.getName())
-                .role(u.getRole() != null ? u.getRole().name() : null)
-                .createdAt(u.getCreatedAt())
-                .build();
+        return userMapper.toResponse(u);
     }
 
     public List<UserResponse> findAll() {
-        return userRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
+        return userRepository.findAll().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     public UserResponse findById(Long id) {
@@ -50,16 +53,9 @@ public class UserService {
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already in use");
         }
-        //TODO utiliser un mapper
-        User u = User.builder()
-                .email(req.getEmail())
-                .name(req.getName())
-                .passwordHash(passwordEncoder.encode(req.getPassword()))
-                .role(req.getRole() != null ? Role.valueOf(req.getRole()) : Role.CLIENT)
-                .createdAt(Instant.now())
-                .build();
-        User saved = userRepository.save(u);
-        return toResponse(saved);
+        User u = userMapper.toEntity(req);
+        u.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+        return toResponse(userRepository.save(u));
     }
 
     @Transactional
@@ -73,12 +69,12 @@ public class UserService {
             });
             u.setEmail(req.getEmail());
         }
+
         if (req.getName() != null) u.setName(req.getName());
         if (req.getPassword() != null) u.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         if (req.getRole() != null) u.setRole(Role.valueOf(req.getRole()));
 
-        User saved = userRepository.save(u);
-        return toResponse(saved);
+        return toResponse(userRepository.save(u));
     }
 
     @Transactional
