@@ -24,7 +24,7 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'barmaker@barapp.fr');
 -- Demo client account — email: client@barapp.fr / password: client123
 INSERT INTO users (email, name, role, password_hash, created_at)
 SELECT 'client@barapp.fr', 'Demo Client', 'CLIENT',
-       '$2a$10$wKBk2.oXl5XZsKHlAERGsO4tn/8/yqZfWuJDpP0atWUXcm4wOIJYy', CURRENT_TIMESTAMP
+       '$2a$10$wTB8EMto3YmsdnkfeqStY.cbJ4tY6PN8KhaLoaCGPQqidwEh73EAm', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'client@barapp.fr');
 
 -- Categories
