@@ -3,7 +3,6 @@ package fr.foreach.barapp.exceptions;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.http.HttpStatus;
 
 @RestControllerAdvice

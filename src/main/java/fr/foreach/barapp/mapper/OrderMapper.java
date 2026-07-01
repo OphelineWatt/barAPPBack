@@ -1,6 +1,5 @@
 package fr.foreach.barapp.mapper;
 
-import fr.foreach.barapp.dtos.OrderCreateRequest;
 import fr.foreach.barapp.dtos.OrderResponse;
 import fr.foreach.barapp.entities.Order;
 import org.mapstruct.Mapper;
