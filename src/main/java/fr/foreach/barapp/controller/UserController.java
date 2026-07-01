@@ -6,6 +6,7 @@ import fr.foreach.barapp.dtos.UserUpdateRequest;
 import fr.foreach.barapp.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +23,19 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponse> create(@RequestBody @Validated UserCreateRequest request) {
+        // inscription publique : on force le rôle CLIENT pour empêcher la création d'un barmaker
+        request.setRole("CLIENT");
         userService.save(request);
         // on renvoie juste un 201 Created, sans le corps de l'utilisateur créé
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PostMapping("/barmakers")
+    @PreAuthorize("hasRole('BARMAKER')")
+    public ResponseEntity<Void> createBarmaker(@RequestBody @Validated UserCreateRequest request) {
+        // réservé aux barmakers : crée un nouveau compte barmaker
+        request.setRole("BARMAKER");
+        userService.save(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
