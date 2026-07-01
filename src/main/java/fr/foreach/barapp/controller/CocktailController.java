@@ -4,6 +4,7 @@ import fr.foreach.barapp.dtos.CocktailDto;
 import fr.foreach.barapp.services.CocktailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,7 @@ public class CocktailController {
     public CocktailController(CocktailService cocktailService) { this.cocktailService = cocktailService; }
 
     @PostMapping
+    @PreAuthorize("hasRole('BARMAKER')")
     public ResponseEntity<Void> create(@RequestBody @Validated CocktailDto dto) {
         cocktailService.save(dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();

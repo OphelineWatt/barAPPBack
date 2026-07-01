@@ -11,7 +11,7 @@ public interface CocktailMapper {
     @Mapping(target = "createdById", source = "createdBy.id")
     CocktailDto toDto(Cocktail cocktail);
 
-    @Mapping(target = "category.id", source = "categoryId")
-    @Mapping(target = "createdBy.id", source = "createdById")
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
     Cocktail toEntity(CocktailDto dto);
 }

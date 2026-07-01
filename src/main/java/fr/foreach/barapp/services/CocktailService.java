@@ -10,6 +10,7 @@ import fr.foreach.barapp.dtos.CocktailDto;
 import fr.foreach.barapp.entities.Cocktail;
 import fr.foreach.barapp.exceptions.ResourceNotFoundException;
 import fr.foreach.barapp.mapper.CocktailMapper;
+import fr.foreach.barapp.repositories.CategoryRepository;
 import fr.foreach.barapp.repositories.CocktailRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class CocktailService {
 
     private final CocktailRepository cocktailRepository;
+    private final CategoryRepository categoryRepository;
     private final CocktailMapper cocktailMapper;
 
     public List<CocktailDto> findAll() {
@@ -34,6 +36,9 @@ public class CocktailService {
 
     public void save(CocktailDto dto) {
         Cocktail entity = cocktailMapper.toEntity(dto);
+        if (dto.getCategoryId() != null) {
+            entity.setCategory(categoryRepository.getReferenceById(dto.getCategoryId()));
+        }
         cocktailRepository.save(entity);
     }
 
