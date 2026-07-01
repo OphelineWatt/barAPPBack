@@ -13,5 +13,7 @@ public interface CocktailMapper {
 
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "prices", ignore = true)
+    @Mapping(target = "ingredients", ignore = true)
     Cocktail toEntity(CocktailDto dto);
 }
