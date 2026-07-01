@@ -60,7 +60,7 @@ public class CocktailService {
     public void update(CocktailDto dto, Long id) {
         Cocktail existing = cocktailRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cocktail not found with id " + id));
-        // update fields
+        // on met à jour les infos du cocktail
         existing.setName(dto.getName());
         existing.setDescription(dto.getDescription());
         existing.setImageUrl(dto.getImageUrl());

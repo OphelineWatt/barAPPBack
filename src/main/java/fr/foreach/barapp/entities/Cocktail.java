@@ -1,4 +1,3 @@
-// File: Cocktail.java
 package fr.foreach.barapp.entities;
 
 import jakarta.persistence.*;

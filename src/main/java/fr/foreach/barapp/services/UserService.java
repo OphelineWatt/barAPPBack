@@ -39,14 +39,14 @@ public class UserService {
     }
 
     public UserResponse create(UserCreateRequest request) {
-        // prevent duplicate email
+        // on vérifie que l'email n'est pas déjà utilisé
         userRepository.findByEmail(request.getEmail()).ifPresent(u -> {
             throw new IllegalArgumentException("Email already in use");
         });
 
         User user = userMapper.toEntity(request);
 
-        // role mapping safe
+        // on récupère le rôle envoyé, sinon CLIENT par défaut
         if (request.getRole() != null) {
             try {
                 user.setRole(Role.valueOf(request.getRole()));
@@ -57,7 +57,7 @@ public class UserService {
             user.setRole(Role.CLIENT);
         }
 
-        // encode password
+        // on chiffre le mot de passe avant de le sauvegarder
         if (request.getPassword() != null) {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
@@ -79,7 +79,7 @@ public class UserService {
         User existing = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
 
-        // map fields from update DTO to entity
+        // on met à jour seulement les champs envoyés (les autres restent inchangés)
         if (request.getEmail() != null) existing.setEmail(request.getEmail());
         if (request.getName() != null) existing.setName(request.getName());
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
@@ -88,7 +88,7 @@ public class UserService {
         if (request.getRole() != null) {
             try {
                 existing.setRole(Role.valueOf(request.getRole()));
-            } catch (IllegalArgumentException ignored) { /* keep existing */ }
+            } catch (IllegalArgumentException ignored) { /* rôle invalide : on garde l'ancien */ }
         }
 
         User updatedUser = userRepository.save(existing);

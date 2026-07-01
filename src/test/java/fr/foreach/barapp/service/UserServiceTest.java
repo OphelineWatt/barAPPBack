@@ -89,14 +89,14 @@ class UserServiceTest {
     @Test
     @DisplayName("findAll should return list of users")
     void testFindAll() {
-        // Arrange
+        // Préparation
         List<User> users = List.of(testUser);
         when(userRepository.findAll()).thenReturn(users);
 
-        // Act
+        // Action
         List<UserResponse> result = userService.findAll();
 
-        // Assert
+        // Vérification
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("test@example.com", result.get(0).getEmail());
@@ -106,13 +106,13 @@ class UserServiceTest {
     @Test
     @DisplayName("findById should return user when found")
     void testFindByIdSuccess() {
-        // Arrange
+        // Préparation
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
-        // Act
+        // Action
         UserResponse result = userService.findById(1L);
 
-        // Assert
+        // Vérification
         assertNotNull(result);
         assertEquals("test@example.com", result.getEmail());
         assertEquals("Test User", result.getName());
@@ -122,10 +122,10 @@ class UserServiceTest {
     @Test
     @DisplayName("findById should throw ResourceNotFoundException when user not found")
     void testFindByIdNotFound() {
-        // Arrange
+        // Préparation
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Act & Assert
+        // Action et vérification
         assertThrows(ResourceNotFoundException.class, () -> userService.findById(99L));
         verify(userRepository, times(1)).findById(99L);
     }
@@ -133,7 +133,7 @@ class UserServiceTest {
     @Test
     @DisplayName("create should save new user successfully")
     void testCreateSuccess() {
-        // Arrange
+        // Préparation
         when(userRepository.findByEmail(createRequest.getEmail())).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("$2a$10$encrypted");
 
@@ -148,10 +148,10 @@ class UserServiceTest {
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        // Act
+        // Action
         UserResponse result = userService.create(createRequest);
 
-        // Assert
+        // Vérification
         assertNotNull(result);
         assertEquals("newuser@example.com", result.getEmail());
         verify(userRepository, times(1)).findByEmail(createRequest.getEmail());
@@ -161,11 +161,11 @@ class UserServiceTest {
     @Test
     @DisplayName("create should throw exception when email already exists")
     void testCreateDuplicateEmail() {
-        // Arrange
+        // Préparation
         when(userRepository.findByEmail(createRequest.getEmail()))
                 .thenReturn(Optional.of(testUser));
 
-        // Act & Assert
+        // Action et vérification
         assertThrows(IllegalArgumentException.class, () -> userService.create(createRequest));
         verify(userRepository, never()).save(any());
     }
@@ -173,7 +173,7 @@ class UserServiceTest {
     @Test
     @DisplayName("update should modify user successfully")
     void testUpdateSuccess() {
-        // Arrange
+        // Préparation
         UserUpdateRequest updateRequest = UserUpdateRequest.builder()
                 .email("updated@example.com")
                 .name("Updated Name")
@@ -183,10 +183,10 @@ class UserServiceTest {
         when(userRepository.findByEmail("updated@example.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-        // Act
+        // Action
         UserResponse result = userService.update(1L, updateRequest);
 
-        // Assert
+        // Vérification
         assertNotNull(result);
         verify(userRepository, times(1)).save(any(User.class));
     }
@@ -194,27 +194,27 @@ class UserServiceTest {
     @Test
     @DisplayName("update should throw exception when user not found")
     void testUpdateNotFound() {
-        // Arrange
+        // Préparation
         UserUpdateRequest updateRequest = UserUpdateRequest.builder()
                 .name("Updated Name")
                 .build();
 
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Act & Assert
+        // Action et vérification
         assertThrows(ResourceNotFoundException.class, () -> userService.update(99L, updateRequest));
     }
 
     @Test
     @DisplayName("delete should remove user successfully")
     void testDeleteSuccess() {
-        // Arrange
+        // Préparation
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
-        // Act
+        // Action
         userService.delete(1L);
 
-        // Assert
+        // Vérification
         verify(userRepository, times(1)).findById(1L);
         verify(userRepository, times(1)).delete(testUser);
     }
@@ -222,10 +222,10 @@ class UserServiceTest {
     @Test
     @DisplayName("delete should throw exception when user not found")
     void testDeleteNotFound() {
-        // Arrange
+        // Préparation
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Act & Assert
+        // Action et vérification
         assertThrows(ResourceNotFoundException.class, () -> userService.delete(99L));
         verify(userRepository, never()).delete(any());
     }
@@ -233,10 +233,10 @@ class UserServiceTest {
     @Test
     @DisplayName("toResponse should convert User entity to UserResponse")
     void testToResponse() {
-        // Act
+        // Action
         UserResponse result = userService.toResponse(testUser);
 
-        // Assert
+        // Vérification
         assertNotNull(result);
         assertEquals(testUser.getId(), result.getId());
         assertEquals(testUser.getEmail(), result.getEmail());

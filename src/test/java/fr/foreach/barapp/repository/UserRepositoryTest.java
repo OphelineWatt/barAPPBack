@@ -41,10 +41,10 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should save user to database")
     void testSaveUser() {
-        // Act
+        // Action
         User saved = userRepository.save(testUser);
 
-        // Assert
+        // Vérification
         assertNotNull(saved.getId());
         assertTrue(saved.getId() > 0);
     }
@@ -52,13 +52,13 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should find user by id")
     void testFindUserById() {
-        // Arrange
+        // Préparation
         User saved = userRepository.save(testUser);
 
-        // Act
+        // Action
         Optional<User> found = userRepository.findById(saved.getId());
 
-        // Assert
+        // Vérification
         assertTrue(found.isPresent());
         assertEquals("test@example.com", found.get().getEmail());
     }
@@ -66,13 +66,13 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should find user by email")
     void testFindUserByEmail() {
-        // Arrange
+        // Préparation
         userRepository.save(testUser);
 
-        // Act
+        // Action
         Optional<User> found = userRepository.findByEmail("test@example.com");
 
-        // Assert
+        // Vérification
         assertTrue(found.isPresent());
         assertEquals("Test User", found.get().getName());
     }
@@ -80,25 +80,25 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should return empty when email not found")
     void testFindUserByEmailNotFound() {
-        // Act
+        // Action
         Optional<User> found = userRepository.findByEmail("nonexistent@example.com");
 
-        // Assert
+        // Vérification
         assertTrue(found.isEmpty());
     }
 
     @Test
     @DisplayName("Should update user")
     void testUpdateUser() {
-        // Arrange
+        // Préparation
         User saved = userRepository.save(testUser);
         saved.setName("Updated Name");
         saved.setEmail("updated@example.com");
 
-        // Act
+        // Action
         User updated = userRepository.save(saved);
 
-        // Assert
+        // Vérification
         assertEquals("Updated Name", updated.getName());
         assertEquals("updated@example.com", updated.getEmail());
     }
@@ -106,14 +106,14 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should delete user")
     void testDeleteUser() {
-        // Arrange
+        // Préparation
         User saved = userRepository.save(testUser);
         Long userId = saved.getId();
 
-        // Act
+        // Action
         userRepository.deleteById(userId);
 
-        // Assert
+        // Vérification
         Optional<User> found = userRepository.findById(userId);
         assertTrue(found.isEmpty());
     }
@@ -121,7 +121,7 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should enforce unique email constraint")
     void testUniqueEmailConstraint() {
-        // Arrange
+        // Préparation
         User user1 = User.builder()
                 .email("unique@example.com")
                 .name("User 1")
@@ -140,7 +140,7 @@ class UserRepositoryTest {
 
         userRepository.save(user1);
 
-        // Act & Assert
+        // Action et vérification
         assertThrows(Exception.class, () -> {
             userRepository.save(user2);
             userRepository.flush(); // Force la contrainte
@@ -150,7 +150,7 @@ class UserRepositoryTest {
     @Test
     @DisplayName("Should retrieve all users")
     void testFindAllUsers() {
-        // Arrange
+        // Préparation
         User user1 = User.builder()
                 .email("user1@example.com")
                 .name("User 1")
@@ -170,10 +170,10 @@ class UserRepositoryTest {
         userRepository.save(user1);
         userRepository.save(user2);
 
-        // Act
+        // Action
         var allUsers = userRepository.findAll();
 
-        // Assert
+        // Vérification
         assertEquals(2, allUsers.size());
     }
 }

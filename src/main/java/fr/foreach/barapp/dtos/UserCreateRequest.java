@@ -18,5 +18,5 @@ public class UserCreateRequest {
 
     private String name;
 
-    private String role; // "BARMAKER", "CLIENT"
+    private String role; // rôle de l'utilisateur : "BARMAKER" ou "CLIENT"
 }

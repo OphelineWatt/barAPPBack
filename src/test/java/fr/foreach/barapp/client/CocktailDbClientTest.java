@@ -36,7 +36,7 @@ class CocktailDbClientTest {
     void getIngredientsShouldSkipNullIngredients() {
         CocktailDbDrinkDto dto = new CocktailDbDrinkDto();
         dto.setExtra("strIngredient1", "Rum");
-        // strIngredient2 not set → skipped
+        // strIngredient2 non renseigné → ignoré
 
         assertEquals(1, dto.getIngredients().size());
     }

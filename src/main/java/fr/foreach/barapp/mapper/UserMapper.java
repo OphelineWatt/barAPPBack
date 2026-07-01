@@ -1,4 +1,3 @@
-// File: UserMapper.java
 package fr.foreach.barapp.mapper;
 
 import fr.foreach.barapp.dtos.UserCreateRequest;

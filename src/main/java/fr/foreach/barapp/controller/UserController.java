@@ -23,7 +23,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserResponse> create(@RequestBody @Validated UserCreateRequest request) {
         userService.save(request);
-        // Option: return created resource if service returns it; here we fetch the created user by email is omitted
+        // on renvoie juste un 201 Created, sans le corps de l'utilisateur créé
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody UserUpdateRequest request) {
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody @Validated UserUpdateRequest request) {
         userService.update(request, id);
         return ResponseEntity.noContent().build();
     }

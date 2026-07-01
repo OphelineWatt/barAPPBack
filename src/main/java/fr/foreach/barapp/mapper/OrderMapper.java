@@ -10,5 +10,5 @@ public interface OrderMapper {
     @Mapping(target = "userId", source = "user.id")
     OrderResponse toDto(Order order);
 
-    // No direct mapping from create request to entity because items need price lookup
+    // pas de mapping direct depuis la requête de création : il faut d'abord aller chercher le prix de chaque cocktail
 }

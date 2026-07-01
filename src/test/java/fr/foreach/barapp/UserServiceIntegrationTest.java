@@ -36,7 +36,7 @@ class UserServiceIntegrationTest {
     @Test
     @DisplayName("Should create user and retrieve it from database")
     void testCreateAndFindUser() {
-        // Arrange
+        // Préparation
         UserCreateRequest request = UserCreateRequest.builder()
                 .email("integration@example.com")
                 .name("Integration Test User")
@@ -44,10 +44,10 @@ class UserServiceIntegrationTest {
                 .role("CLIENT")
                 .build();
 
-        // Act
+        // Action
         UserResponse created = userService.create(request);
 
-        // Assert
+        // Vérification
         assertNotNull(created.getId());
         UserResponse retrieved = userService.findById(created.getId());
         assertEquals("integration@example.com", retrieved.getEmail());
@@ -58,7 +58,7 @@ class UserServiceIntegrationTest {
     @Test
     @DisplayName("Should find all users")
     void testFindAllUsers() {
-        // Arrange - Créer plusieurs utilisateurs
+        // Préparation - Créer plusieurs utilisateurs
         UserCreateRequest req1 = UserCreateRequest.builder()
                 .email("user1@example.com")
                 .name("User 1")
@@ -76,17 +76,17 @@ class UserServiceIntegrationTest {
         userService.create(req1);
         userService.create(req2);
 
-        // Act
+        // Action
         var allUsers = userService.findAll();
 
-        // Assert
+        // Vérification
         assertEquals(2, allUsers.size());
     }
 
     @Test
     @DisplayName("Should update existing user")
     void testUpdateUser() {
-        // Arrange - Créer un utilisateur
+        // Préparation - Créer un utilisateur
         UserCreateRequest createReq = UserCreateRequest.builder()
                 .email("update@example.com")
                 .name("Original Name")
@@ -96,7 +96,7 @@ class UserServiceIntegrationTest {
 
         UserResponse created = userService.create(createReq);
 
-        // Act - Mettre à jour
+        // Action - Mettre à jour
         UserUpdateRequest updateReq = UserUpdateRequest.builder()
                 .name("Updated Name")
                 .email("updated@example.com")
@@ -104,7 +104,7 @@ class UserServiceIntegrationTest {
 
         UserResponse updated = userService.update(created.getId(), updateReq);
 
-        // Assert
+        // Vérification
         assertEquals("Updated Name", updated.getName());
         assertEquals("updated@example.com", updated.getEmail());
 
@@ -116,7 +116,7 @@ class UserServiceIntegrationTest {
     @Test
     @DisplayName("Should delete user from database")
     void testDeleteUser() {
-        // Arrange
+        // Préparation
         UserCreateRequest request = UserCreateRequest.builder()
                 .email("delete@example.com")
                 .name("To Delete")
@@ -127,17 +127,17 @@ class UserServiceIntegrationTest {
         UserResponse created = userService.create(request);
         Long userId = created.getId();
 
-        // Act
+        // Action
         userService.delete(userId);
 
-        // Assert
+        // Vérification
         assertThrows(Exception.class, () -> userService.findById(userId));
     }
 
     @Test
     @DisplayName("Should prevent duplicate email")
     void testDuplicateEmailPrevention() {
-        // Arrange
+        // Préparation
         UserCreateRequest req1 = UserCreateRequest.builder()
                 .email("duplicate@example.com")
                 .name("User 1")
@@ -154,14 +154,14 @@ class UserServiceIntegrationTest {
 
         userService.create(req1);
 
-        // Act & Assert
+        // Action et vérification
         assertThrows(IllegalArgumentException.class, () -> userService.create(req2));
     }
 
     @Test
     @DisplayName("Should handle password encoding")
     void testPasswordEncoding() {
-        // Arrange
+        // Préparation
         UserCreateRequest request = UserCreateRequest.builder()
                 .email("password@example.com")
                 .name("Password Test")
@@ -169,10 +169,10 @@ class UserServiceIntegrationTest {
                 .role("CLIENT")
                 .build();
 
-        // Act
+        // Action
         UserResponse response = userService.create(request);
 
-        // Assert - Vérifier que l'utilisateur a été créé
+        // Vérification - Vérifier que l'utilisateur a été créé
         assertNotNull(response.getId());
 
         // Vérifier dans la BD que le mot de passe est hashé
