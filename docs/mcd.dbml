@@ -1,0 +1,87 @@
+// ============================================================
+//  Bar'app — Modèle de données (MCD / MLD)
+//  À visualiser sur https://dbdiagram.io  (Import > coller ce fichier)
+//  Puis exporter en PNG/PDF pour la livraison.
+// ============================================================
+
+Table users {
+  id            bigint      [pk, increment]
+  email         varchar     [unique, not null]
+  name          varchar
+  role          varchar     [not null, note: 'CLIENT | BARMAKER']
+  password_hash varchar     [note: 'haché avec BCrypt']
+  created_at    timestamp   [not null]
+}
+
+Table categories {
+  id          bigint  [pk, increment]
+  name        varchar [not null]
+  description varchar
+}
+
+Table sizes {
+  id    bigint  [pk, increment]
+  code  varchar [not null, note: 'S / M / L']
+  label varchar
+}
+
+Table ingredients {
+  id   bigint  [pk, increment]
+  name varchar [not null]
+  unit varchar
+}
+
+Table cocktails {
+  id          bigint    [pk, increment]
+  name        varchar   [not null]
+  description text
+  category_id bigint    [ref: > categories.id]
+  image_url   text
+  active      boolean   [not null, default: true]
+  created_by  bigint    [ref: > users.id, note: 'barmaker créateur']
+  created_at  timestamp
+  updated_at  timestamp
+}
+
+// Association N-N : un cocktail a plusieurs ingrédients (avec une quantité)
+Table cocktail_ingredient {
+  cocktail_id   bigint  [ref: > cocktails.id]
+  ingredient_id bigint  [ref: > ingredients.id]
+  quantity      varchar
+
+  indexes {
+    (cocktail_id, ingredient_id) [pk]
+  }
+}
+
+// Association N-N : un prix par taille pour chaque cocktail
+Table cocktail_price {
+  cocktail_id bigint   [ref: > cocktails.id]
+  size_id     bigint   [ref: > sizes.id]
+  price       decimal  [not null]
+
+  indexes {
+    (cocktail_id, size_id) [pk]
+  }
+}
+
+Table orders {
+  id           bigint    [pk, increment]
+  user_id      bigint    [ref: > users.id, note: 'client qui commande']
+  status       varchar   [not null, note: 'COMMANDEE | EN_COURS | TERMINEE']
+  created_at   timestamp
+  total_amount decimal
+  pickup_code  varchar
+}
+
+Table order_items {
+  id          bigint    [pk, increment]
+  order_id    bigint    [ref: > orders.id]
+  cocktail_id bigint    [ref: > cocktails.id]
+  size_id     bigint    [ref: > sizes.id]
+  quantity    int       [not null, default: 1]
+  unit_price  decimal
+  item_status varchar   [note: 'PREPARATION_INGREDIENTS | ASSEMBLAGE | DRESSAGE | TERMINEE']
+  started_at  timestamp
+  finished_at timestamp
+}

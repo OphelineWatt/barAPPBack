@@ -76,10 +76,15 @@ class CocktailMapperTest {
     }
 
     @Test
-    void shouldMapDtoToEntityRebuildingNestedReferences() {
+    void shouldMapDtoToEntityIgnoringNestedRelations() {
+        // Le mapper ne recopie que les champs simples. Les relations
+        // (category, createdBy, prices, ingredients) sont ignorées ici :
+        // elles sont gérées dans CocktailService pour éviter des entités détachées.
         CocktailDto dto = CocktailDto.builder()
                 .id(1L)
                 .name("Mojito")
+                .description("Rafraichissant")
+                .imageUrl("http://example.com/mojito.png")
                 .categoryId(7L)
                 .createdById(9L)
                 .active(true)
@@ -90,11 +95,14 @@ class CocktailMapperTest {
         Cocktail entity = mapper.toEntity(dto);
 
         assertNotNull(entity);
-        assertEquals(7L, entity.getCategory().getId());
-        assertEquals(9L, entity.getCreatedBy().getId());
-        assertEquals(1, entity.getIngredients().size());
-        assertEquals(5L, entity.getIngredients().get(0).getIngredientId());
-        assertEquals(1, entity.getPrices().size());
-        assertEquals(100L, entity.getPrices().get(0).getSizeId());
+        // champs simples bien recopiés
+        assertEquals("Mojito", entity.getName());
+        assertEquals("Rafraichissant", entity.getDescription());
+        assertTrue(entity.isActive());
+        // relations ignorées par le mapper
+        assertNull(entity.getCategory());
+        assertNull(entity.getCreatedBy());
+        assertTrue(entity.getIngredients().isEmpty());
+        assertTrue(entity.getPrices().isEmpty());
     }
 }

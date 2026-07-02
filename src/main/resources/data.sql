@@ -44,6 +44,24 @@ INSERT INTO categories (name, description)
 SELECT 'Mocktails', 'Sans alcool, 100% saveur'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE name = 'Mocktails');
 
+-- Ingrédients (pour que le barmaker ait de quoi composer ses cocktails)
+INSERT INTO ingredients (name, unit)
+SELECT 'Rhum blanc', 'cl' WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE name = 'Rhum blanc');
+INSERT INTO ingredients (name, unit)
+SELECT 'Menthe fraîche', 'feuilles' WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE name = 'Menthe fraîche');
+INSERT INTO ingredients (name, unit)
+SELECT 'Citron vert', 'quartiers' WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE name = 'Citron vert');
+INSERT INTO ingredients (name, unit)
+SELECT 'Sucre de canne', 'cl' WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE name = 'Sucre de canne');
+INSERT INTO ingredients (name, unit)
+SELECT 'Eau gazeuse', 'cl' WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE name = 'Eau gazeuse');
+INSERT INTO ingredients (name, unit)
+SELECT 'Gin', 'cl' WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE name = 'Gin');
+INSERT INTO ingredients (name, unit)
+SELECT 'Campari', 'cl' WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE name = 'Campari');
+INSERT INTO ingredients (name, unit)
+SELECT 'Vermouth rouge', 'cl' WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE name = 'Vermouth rouge');
+
 -- Cocktails (on retrouve la catégorie avec une sous-requête pour rester compatible H2 et PostgreSQL)
 INSERT INTO cocktails (name, description, category_id, image_url, active, created_at)
 SELECT 'Mojito',

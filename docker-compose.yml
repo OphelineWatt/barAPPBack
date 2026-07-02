@@ -33,6 +33,19 @@ services:
     networks:
       - backend
 
+  # Frontend Vue servi par nginx (le dossier barapp-frontend est voisin de barapp-backend)
+  frontend:
+    build:
+      context: ../barapp-frontend
+      dockerfile: Dockerfile
+    container_name: barapp_frontend
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
+    networks:
+      - backend
+
 volumes:
   postgres_data:
 

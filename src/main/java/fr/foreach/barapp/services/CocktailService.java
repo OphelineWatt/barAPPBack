@@ -8,10 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.foreach.barapp.dtos.CocktailDto;
 import fr.foreach.barapp.entities.Cocktail;
+import fr.foreach.barapp.entities.CocktailIngredient;
 import fr.foreach.barapp.entities.CocktailPrice;
 import fr.foreach.barapp.exceptions.ResourceNotFoundException;
 import fr.foreach.barapp.mapper.CocktailMapper;
 import fr.foreach.barapp.repositories.CategoryRepository;
+import fr.foreach.barapp.repositories.CocktailIngredientRepository;
 import fr.foreach.barapp.repositories.CocktailPriceRepository;
 import fr.foreach.barapp.repositories.CocktailRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class CocktailService {
     private final CocktailRepository cocktailRepository;
     private final CategoryRepository categoryRepository;
     private final CocktailPriceRepository cocktailPriceRepository;
+    private final CocktailIngredientRepository cocktailIngredientRepository;
     private final CocktailMapper cocktailMapper;
 
     public List<CocktailDto> findAll() {
@@ -54,6 +57,18 @@ public class CocktailService {
                             .build())
                     .collect(Collectors.toList());
             cocktailPriceRepository.saveAll(prices);
+        }
+
+        if (dto.getIngredients() != null) {
+            List<CocktailIngredient> ingredients = dto.getIngredients().stream()
+                    .filter(i -> i.getIngredientId() != null)
+                    .map(i -> CocktailIngredient.builder()
+                            .cocktailId(saved.getId())
+                            .ingredientId(i.getIngredientId())
+                            .quantity(i.getQuantity())
+                            .build())
+                    .collect(Collectors.toList());
+            cocktailIngredientRepository.saveAll(ingredients);
         }
     }
 
